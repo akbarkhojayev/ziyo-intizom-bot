@@ -3,7 +3,6 @@ from datetime import timedelta
 from html import escape
 
 from aiogram import Bot
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -50,14 +49,6 @@ def announcement_message(announcement):
     return f"📣 <b>{escape(announcement.title)}</b>\n\n{escape(text)}"
 
 
-def announcement_keyboard():
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="ZIYO ilovasini ochish", url=settings.MINI_APP_URL)],
-        ]
-    )
-
-
 def send_announcement_to_users(announcement):
     if not settings.BOT_TOKEN:
         return {"sent": 0, "failed": 0, "total": 0, "error": "BOT_TOKEN topilmadi."}
@@ -76,7 +67,6 @@ def send_announcement_to_users(announcement):
                         telegram_id,
                         announcement_message(announcement),
                         parse_mode="HTML",
-                        reply_markup=announcement_keyboard(),
                     )
                     sent += 1
                 except Exception:
