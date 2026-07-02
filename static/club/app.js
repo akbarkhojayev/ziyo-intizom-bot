@@ -31,6 +31,53 @@ function showToast(text) {
   setTimeout(() => toast.classList.add("hidden"), 2600);
 }
 
+function appUrl(path) {
+  return `${window.location.origin}${path}`;
+}
+
+function storyImageUrl() {
+  const url = appUrl(`/api/story-image/${encodeURIComponent(state.user.telegram_id)}.png?v=${Date.now()}`);
+  return url.replace(/^http:\/\//, "https://");
+}
+
+async function copyText(text) {
+  if (!text) return false;
+  try {
+    if (tg?.writeTextToClipboard) {
+      await new Promise((resolve) => tg.writeTextToClipboard(text, resolve));
+      return true;
+    }
+  } catch (error) {
+    console.debug("Telegram clipboard failed", error);
+  }
+  try {
+    if (navigator.clipboard?.writeText && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch (error) {
+    console.debug("Browser clipboard failed", error);
+  }
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  textarea.style.top = "0";
+  document.body.appendChild(textarea);
+  textarea.focus();
+  textarea.select();
+  textarea.setSelectionRange(0, textarea.value.length);
+  let copied = false;
+  try {
+    copied = document.execCommand("copy");
+  } catch (error) {
+    console.debug("execCommand copy failed", error);
+  }
+  textarea.remove();
+  return copied;
+}
+
 function telegramPayload() {
   const params = new URLSearchParams(window.location.search);
   const unsafe = tg?.initDataUnsafe || {};
@@ -372,13 +419,27 @@ $("ratingPeriod").addEventListener("click", (event) => {
   renderLeaderboard(state.rankings[button.dataset.period] || state.leaderboard);
 });
 $("copyReferralBtn").addEventListener("click", async () => {
-  await navigator.clipboard?.writeText(state.user.referral_url);
-  showToast("Referral link nusxalandi");
+  const copied = await copyText(state.user.referral_url);
+  showToast(copied ? "Referral link nusxalandi" : "Nusxa olish ishlamadi. Linkni bosib ushlab ko'chiring.");
 });
 $("shareStoryBtn").addEventListener("click", () => {
   const text = `ZIYO | INTIZOM CLUB\nBugun +${state.user.today_report?.xp_earned || 0} XP\nStreak: ${state.user.streak}`;
-  tg?.openTelegramLink?.(`https://t.me/share/url?url=${encodeURIComponent(state.user.referral_url)}&text=${encodeURIComponent(text)}`);
-  if (!tg) showToast(text);
+  if (!tg?.shareToStory) {
+    showToast("Story ulashish faqat Telegram mobil ilovasida ishlaydi. Telegramni yangilang.");
+    return;
+  }
+  try {
+    tg.shareToStory(storyImageUrl(), {
+      text,
+      widget_link: {
+        url: state.user.referral_url,
+        name: "ZIYO botga qo'shilish",
+      },
+    });
+  } catch (error) {
+    console.debug("shareToStory failed", error);
+    showToast("Story oynasi ochilmadi. Telegram mobil ilovasini yangilang.");
+  }
 });
 
 bootstrap().catch(() => showToast("Ilovani yuklashda xatolik"));

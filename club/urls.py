@@ -19,4 +19,6 @@ urlpatterns = [
     path("api/register/", views.api_register, name="api_register"),
     path("api/report/", views.api_submit_report, name="api_submit_report"),
     path("api/ranking/", views.api_ranking, name="api_ranking"),
+    path("api/story-image/<int:telegram_id>.png", views.api_story_image, name="api_story_image_png"),
+    path("api/story-image/", views.api_story_image, name="api_story_image"),
 ]
