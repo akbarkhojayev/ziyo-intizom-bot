@@ -334,6 +334,16 @@ a.list-row:hover {
   white-space: nowrap;
 }
 
+.announcement-row form {
+  flex: 0 0 auto;
+}
+
+.small-button {
+  min-height: 34px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
 .search-card, .stack-form {
   display: grid;
   gap: 10px;

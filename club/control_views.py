@@ -1,5 +1,10 @@
+import asyncio
 from datetime import timedelta
+from html import escape
 
+from aiogram import Bot
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import user_passes_test
@@ -36,6 +41,55 @@ def control_login(request):
 def control_logout(request):
     logout(request)
     return redirect("club:control_login")
+
+
+def announcement_message(announcement):
+    text = announcement.text.strip()
+    if len(text) > 3500:
+        text = f"{text[:3500].rstrip()}\n\n..."
+    return f"📣 <b>{escape(announcement.title)}</b>\n\n{escape(text)}"
+
+
+def announcement_keyboard():
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="ZIYO ilovasini ochish", url=settings.MINI_APP_URL)],
+        ]
+    )
+
+
+def send_announcement_to_users(announcement):
+    if not settings.BOT_TOKEN:
+        return {"sent": 0, "failed": 0, "total": 0, "error": "BOT_TOKEN topilmadi."}
+
+    telegram_ids = list(UserProfile.objects.filter(is_blocked=False).values_list("telegram_id", flat=True))
+    total = len(telegram_ids)
+
+    async def runner():
+        bot = Bot(settings.BOT_TOKEN)
+        sent = 0
+        failed = 0
+        try:
+            for telegram_id in telegram_ids:
+                try:
+                    await bot.send_message(
+                        telegram_id,
+                        announcement_message(announcement),
+                        parse_mode="HTML",
+                        reply_markup=announcement_keyboard(),
+                    )
+                    sent += 1
+                except Exception:
+                    failed += 1
+        finally:
+            await bot.session.close()
+        return sent, failed
+
+    sent, failed = asyncio.run(runner())
+    announcement.is_sent = sent > 0 or total == 0
+    announcement.sent_at = timezone.now() if announcement.is_sent else None
+    announcement.save(update_fields=["is_sent", "sent_at"])
+    return {"sent": sent, "failed": failed, "total": total, "error": ""}
 
 
 def percent(value, total):
@@ -189,11 +243,31 @@ def control_reports(request):
 @require_http_methods(["GET", "POST"])
 def control_announcements(request):
     if request.method == "POST":
+        resend_id = request.POST.get("resend_id")
+        if resend_id:
+            announcement = get_object_or_404(Announcement, pk=resend_id)
+            result = send_announcement_to_users(announcement)
+            if result["error"]:
+                messages.error(request, result["error"])
+            else:
+                messages.success(
+                    request,
+                    f"E'lon yuborildi: {result['sent']} ta muvaffaqiyatli, {result['failed']} ta xato.",
+                )
+            return redirect("club:control_announcements")
+
         title = request.POST.get("title", "").strip()
         text = request.POST.get("text", "").strip()
         if title and text:
-            Announcement.objects.create(title=title, text=text)
-            messages.success(request, "E'lon saqlandi.")
+            announcement = Announcement.objects.create(title=title, text=text)
+            result = send_announcement_to_users(announcement)
+            if result["error"]:
+                messages.error(request, result["error"])
+            else:
+                messages.success(
+                    request,
+                    f"E'lon yuborildi: {result['sent']} ta muvaffaqiyatli, {result['failed']} ta xato.",
+                )
             return redirect("club:control_announcements")
         messages.error(request, "Sarlavha va matn kerak.")
 

@@ -3,19 +3,36 @@
 {% block content %}
 <div class="layout-grid">
   <section class="panel">
-    <div class="panel-head"><h2>Yangi e'lon</h2><span>Matn saqlanadi</span></div>
+    <div class="panel-head"><h2>Yangi e'lon</h2><span>Barcha aktiv userlarga yuboriladi</span></div>
     <form class="stack-form" method="post">
       {% csrf_token %}
       <label>Sarlavha<input name="title" required></label>
       <label>Matn<textarea name="text" rows="6" required></textarea></label>
-      <button>Saqlash</button>
+      <button>Foydalanuvchilarga yuborish</button>
     </form>
   </section>
   <section class="panel">
     <div class="panel-head"><h2>E'lonlar tarixi</h2><span>{{ announcements|length }} ta</span></div>
     <div class="list">
       {% for item in announcements %}
-        <div class="list-row"><div><strong>{{ item.title }}</strong><span>{{ item.created_at|date:"d.m.Y H:i" }}</span></div><b>{{ item.is_sent|yesno:"Yuborilgan,Qoralama" }}</b></div>
+        <div class="list-row announcement-row">
+          <div>
+            <strong>{{ item.title }}</strong>
+            <span>
+              {{ item.created_at|date:"d.m.Y H:i" }}
+              {% if item.sent_at %} · yuborildi: {{ item.sent_at|date:"d.m.Y H:i" }}{% endif %}
+            </span>
+          </div>
+          {% if item.is_sent %}
+            <b>Yuborilgan</b>
+          {% else %}
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="resend_id" value="{{ item.pk }}">
+              <button class="small-button">Yuborish</button>
+            </form>
+          {% endif %}
+        </div>
       {% empty %}<p class="empty">E'lon yo'q.</p>{% endfor %}
     </div>
   </section>
