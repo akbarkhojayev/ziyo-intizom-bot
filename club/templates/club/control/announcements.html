@@ -1,0 +1,23 @@
+{% extends "club/control/base.html" %}
+{% block heading %}E'lonlar{% endblock %}
+{% block content %}
+<div class="layout-grid">
+  <section class="panel">
+    <div class="panel-head"><h2>Yangi e'lon</h2><span>Matn saqlanadi</span></div>
+    <form class="stack-form" method="post">
+      {% csrf_token %}
+      <label>Sarlavha<input name="title" required></label>
+      <label>Matn<textarea name="text" rows="6" required></textarea></label>
+      <button>Saqlash</button>
+    </form>
+  </section>
+  <section class="panel">
+    <div class="panel-head"><h2>E'lonlar tarixi</h2><span>{{ announcements|length }} ta</span></div>
+    <div class="list">
+      {% for item in announcements %}
+        <div class="list-row"><div><strong>{{ item.title }}</strong><span>{{ item.created_at|date:"d.m.Y H:i" }}</span></div><b>{{ item.is_sent|yesno:"Yuborilgan,Qoralama" }}</b></div>
+      {% empty %}<p class="empty">E'lon yo'q.</p>{% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

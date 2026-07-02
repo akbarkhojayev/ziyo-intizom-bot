@@ -1,0 +1,59 @@
+{% extends "club/control/base.html" %}
+{% block heading %}User profili{% endblock %}
+{% block content %}
+<section class="profile-hero">
+  <div>
+    <span>{{ profile.telegram_id }}</span>
+    <h2>{{ profile.full_name }}</h2>
+    <p>{{ profile.main_goal }} · {{ profile.region|default:"Viloyat yo'q" }}</p>
+  </div>
+  <strong>{{ profile.xp }} XP</strong>
+</section>
+
+<div class="layout-grid">
+  <section class="panel">
+    <div class="panel-head"><h2>Boshqarish</h2><span>{{ profile.league_label }}</span></div>
+    <form class="stack-form" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="xp_adjust">
+      <label>XP miqdori<input name="amount" type="number" placeholder="100 yoki -50"></label>
+      <label>Izoh<input name="note" placeholder="Sabab"></label>
+      <button>XP o'zgartirish</button>
+    </form>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="toggle_block">
+      <button class="danger-button">{{ profile.is_blocked|yesno:"Blokdan chiqarish,Bloklash" }}</button>
+    </form>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h2>Ma'lumot</h2><span>{{ profile.joined_at|date:"d.m.Y" }}</span></div>
+    <div class="info-grid">
+      <div><span>Streak</span><strong>{{ profile.streak }}</strong></div>
+      <div><span>League</span><strong>{{ profile.league_label }}</strong></div>
+      <div><span>Referral</span><strong>{{ profile.referrals.count }}</strong></div>
+      <div><span>Status</span><strong>{{ profile.is_blocked|yesno:"Bloklangan,Aktiv" }}</strong></div>
+    </div>
+  </section>
+</div>
+
+<div class="layout-grid">
+  <section class="panel">
+    <div class="panel-head"><h2>Hisobotlar</h2><span>Oxirgi 20</span></div>
+    <div class="list">
+      {% for report in reports %}
+        <div class="list-row"><div><strong>{{ report.date }}</strong><span>{{ report.xp_earned }} XP</span></div><b>+{{ report.xp_earned }}</b></div>
+      {% empty %}<p class="empty">Hisobot yo'q.</p>{% endfor %}
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panel-head"><h2>XP tranzaksiyalar</h2><span>Oxirgi 20</span></div>
+    <div class="list">
+      {% for item in transactions %}
+        <div class="list-row"><div><strong>{{ item.get_reason_display }}</strong><span>{{ item.note|default:"Izoh yo'q" }}</span></div><b>{{ item.amount }}</b></div>
+      {% empty %}<p class="empty">Tranzaksiya yo'q.</p>{% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

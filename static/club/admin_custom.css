@@ -1,0 +1,379 @@
+:root {
+  --primary: #181a1f;
+  --secondary: #202228;
+  --accent: #e7b957;
+  --primary-fg: #f5f1e8;
+  --body-bg: #0f1012;
+  --body-fg: #f5f1e8;
+  --body-quiet-color: #a7abb3;
+  --body-loud-color: #ffffff;
+  --header-color: #f5f1e8;
+  --header-branding-color: #e7b957;
+  --header-bg: #181a1f;
+  --breadcrumbs-bg: #202228;
+  --link-fg: #e7b957;
+  --link-hover-color: #f2ce7a;
+  --button-bg: #e7b957;
+  --button-fg: #111111;
+  --button-hover-bg: #f2ce7a;
+  --default-button-bg: #e7b957;
+  --default-button-hover-bg: #f2ce7a;
+  --delete-button-bg: #ef6b6b;
+  --object-tools-bg: #e7b957;
+  --object-tools-fg: #111111;
+}
+
+body {
+  background: var(--body-bg);
+}
+
+.brand-link .brand-text {
+  color: var(--accent) !important;
+  font-weight: 800 !important;
+}
+
+#header {
+  border-bottom: 1px solid #2a2d34;
+}
+
+#branding h1,
+#branding h1 a:link,
+#branding h1 a:visited {
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.module,
+div.breadcrumbs,
+#content-related {
+  border-radius: 8px;
+}
+
+.module {
+  border: 1px solid #2a2d34;
+  background: #181a1f;
+}
+
+.module h2,
+.module caption,
+.inline-group h2 {
+  background: #202228;
+  color: var(--accent);
+}
+
+input,
+select,
+textarea {
+  border-radius: 8px;
+}
+
+.button,
+input[type=submit],
+input[type=button],
+.submit-row input,
+a.button {
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.ziyo-dashboard {
+  display: grid;
+  gap: 16px;
+}
+
+.ziyo-dashboard .row {
+  row-gap: 18px;
+}
+
+.ziyo-page-head,
+.ziyo-panel,
+.ziyo-kpi-card,
+.ziyo-compact-stat {
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 8px;
+  background: #181a1f;
+}
+
+.ziyo-page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, #181a1f, #202228);
+}
+
+.ziyo-page-head span,
+.ziyo-section-label span,
+.ziyo-panel-head span {
+  color: #a7abb3;
+}
+
+.ziyo-page-head h1,
+.ziyo-section-label h2,
+.ziyo-panel-head h3 {
+  margin: 0;
+  color: #f5f1e8;
+}
+
+.ziyo-page-head p {
+  margin: 6px 0 0;
+  color: #a7abb3;
+}
+
+.ziyo-page-head span {
+  display: block;
+  color: #e7b957;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.ziyo-actions {
+  display: flex;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.ziyo-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ziyo-kpi-card {
+  position: relative;
+  overflow: hidden;
+  padding: 16px;
+  background: #16191f;
+}
+
+.ziyo-kpi-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: #e7b957;
+}
+
+.ziyo-kpi-card span {
+  display: block;
+  min-height: 30px;
+  color: #a7abb3;
+  font-size: 13px;
+}
+
+.ziyo-kpi-card strong {
+  display: block;
+  color: #e7b957;
+  font-size: 30px;
+  line-height: 1.1;
+}
+
+.ziyo-compact-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ziyo-compact-stat {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,.035);
+}
+
+.ziyo-compact-stat span {
+  color: #a7abb3;
+}
+
+.ziyo-compact-stat strong {
+  color: #e7b957;
+}
+
+.ziyo-panel {
+  padding: 16px;
+}
+
+.ziyo-section-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 12px;
+  padding: 2px 2px 0;
+}
+
+.ziyo-section-label h2 {
+  font-size: 20px;
+}
+
+.ziyo-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.ziyo-panel-head h3 {
+  font-size: 18px;
+}
+
+.ziyo-stat-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.ziyo-stat-line:last-child {
+  border-bottom: 0;
+}
+
+.ziyo-stat-line span {
+  color: #a7abb3;
+  text-align: right;
+}
+
+.ziyo-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ziyo-metric {
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 8px;
+  background: #16191f;
+}
+
+.ziyo-metric span {
+  display: block;
+  color: #a7abb3;
+  font-size: 13px;
+}
+
+.ziyo-metric strong {
+  display: block;
+  color: #e7b957;
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+.ziyo-bars {
+  display: grid;
+  grid-template-columns: repeat(14, minmax(34px, 1fr));
+  gap: 8px;
+  min-height: 178px;
+  align-items: end;
+}
+
+.ziyo-bar-item {
+  display: grid;
+  gap: 5px;
+  text-align: center;
+}
+
+.ziyo-bar-track {
+  position: relative;
+  height: 108px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.06);
+  overflow: hidden;
+}
+
+.ziyo-bar-track span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  min-height: 3px;
+  background: linear-gradient(180deg, #f2ce7a, #e7b957);
+}
+
+.ziyo-bar-item strong {
+  color: #e7b957;
+  font-size: 12px;
+}
+
+.ziyo-bar-item small {
+  color: #a7abb3;
+  font-size: 11px;
+}
+
+.ziyo-progress-line {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 13px;
+}
+
+.ziyo-progress-line:last-child {
+  margin-bottom: 0;
+}
+
+.ziyo-progress-line > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ziyo-progress-line span {
+  color: #a7abb3;
+}
+
+.ziyo-progress-line .progress {
+  height: 8px;
+  background: rgba(255,255,255,.08);
+}
+
+.ziyo-table {
+  margin-bottom: 0;
+}
+
+.ziyo-table td,
+.ziyo-table th {
+  vertical-align: middle;
+}
+
+.ziyo-table thead th {
+  border-top: 0;
+  color: #e7b957;
+}
+
+.ziyo-empty {
+  margin: 0;
+  color: #a7abb3;
+}
+
+@media (max-width: 768px) {
+  .ziyo-page-head,
+  .ziyo-section-label,
+  .ziyo-panel-head {
+    display: grid;
+  }
+
+  .ziyo-kpi-grid,
+  .ziyo-compact-grid,
+  .ziyo-metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ziyo-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ziyo-bars {
+    grid-template-columns: repeat(7, minmax(34px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .ziyo-kpi-grid,
+  .ziyo-compact-grid,
+  .ziyo-metric-grid {
+    grid-template-columns: 1fr;
+  }
+}

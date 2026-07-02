@@ -1,0 +1,15 @@
+{% extends "club/control/base.html" %}
+{% block heading %}Hisobotlar{% endblock %}
+{% block content %}
+<section class="panel">
+  <div class="panel-head"><h2>Oxirgi hisobotlar</h2><span>{{ reports|length }} ta</span></div>
+  <div class="list">
+    {% for report in reports %}
+      <a class="list-row" href="{% url 'club:control_user_detail' report.user.pk %}">
+        <div><strong>{{ report.user.full_name }}</strong><span>{{ report.date }} · {{ report.xp_earned }} XP</span></div>
+        <b>+{{ report.xp_earned }}</b>
+      </a>
+    {% empty %}<p class="empty">Hisobot yo'q.</p>{% endfor %}
+  </div>
+</section>
+{% endblock %}

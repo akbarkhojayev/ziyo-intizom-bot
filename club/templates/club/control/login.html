@@ -1,0 +1,24 @@
+{% load static %}
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZIYO Admin Login</title>
+  <link rel="stylesheet" href="{% static 'club/control.css' %}">
+</head>
+<body class="login-body">
+  <form class="login-card" method="post">
+    {% csrf_token %}
+    <span>ZIYO | INTIZOM CLUB</span>
+    <h1>Admin kirish</h1>
+    <p>Boshqaruv paneliga kirish uchun login va parolni kiriting.</p>
+    {% if messages %}
+      {% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}
+    {% endif %}
+    <label>Login<input name="username" autocomplete="username" required></label>
+    <label>Parol<input name="password" type="password" autocomplete="current-password" required></label>
+    <button type="submit">Kirish</button>
+  </form>
+</body>
+</html>

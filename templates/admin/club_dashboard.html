@@ -1,0 +1,286 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="ziyo-dashboard">
+  <div class="ziyo-page-head">
+    <div>
+      <span>ZIYO | INTIZOM CLUB</span>
+      <h1>Statistika dashboard</h1>
+      <p>Foydalanuvchi aktivligi, XP, hisobotlar va o'sish ko'rsatkichlari.</p>
+    </div>
+    <div class="ziyo-actions">
+      <a class="btn btn-outline-light" href="/admin/">Admin</a>
+      <a class="btn btn-warning" href="/app/" target="_blank">Mini App</a>
+    </div>
+  </div>
+
+  <div class="ziyo-kpi-grid">
+    {% for card in cards|slice:":4" %}
+      <div class="ziyo-kpi-card">
+        <span>{{ card.label }}</span>
+        <strong>{{ card.value }}</strong>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="ziyo-compact-grid">
+    {% for card in cards|slice:"4:" %}
+      <div class="ziyo-compact-stat">
+        <span>{{ card.label }}</span>
+        <strong>{{ card.value }}</strong>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="ziyo-section-label">
+    <h2>Bugungi holat</h2>
+    <span>Qatnashuv va aktivlik</span>
+  </div>
+
+  <div class="ziyo-metric-grid">
+    {% for stat in quick_stats %}
+      <div class="ziyo-metric">
+        <span>{{ stat.label }}</span>
+        <strong>{{ stat.value }}</strong>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="ziyo-section-label">
+    <h2>O'sish va periodlar</h2>
+    <span>XP trendi hamda kun/hafta/oy kesimlari</span>
+  </div>
+
+  <div class="row">
+    <div class="col-xl-8 col-lg-7">
+      <div class="ziyo-panel ziyo-panel-main">
+        <div class="ziyo-panel-head">
+          <h3>Oxirgi 14 kun XP trendi</h3>
+          <span>Kunlik yig'ilgan XP</span>
+        </div>
+        <div class="ziyo-bars">
+          {% for day in daily_rows %}
+            <div class="ziyo-bar-item">
+              <div class="ziyo-bar-track">
+                <span style="height: {{ day.percent }}%"></span>
+              </div>
+              <strong>{{ day.xp }}</strong>
+              <small>{{ day.date }}</small>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-4 col-lg-5">
+      <div class="ziyo-panel">
+        <div class="ziyo-panel-head">
+          <h3>Period statistikasi</h3>
+          <span>Hisobot va XP kesimida</span>
+        </div>
+        {% for item in periods %}
+          <div class="ziyo-stat-line">
+            <strong>{{ item.label }}</strong>
+            <span>{{ item.reports }} hisobot · {{ item.xp }} XP</span>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="ziyo-section-label">
+    <h2>Bajarilish taqsimoti</h2>
+    <span>Vazifalar va league holati</span>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-6">
+      <div class="ziyo-panel">
+        <div class="ziyo-panel-head">
+          <h3>Vazifalar bajarilishi</h3>
+          <span>Jami hisobotlar bo'yicha</span>
+        </div>
+        {% for task in task_rows %}
+          <div class="ziyo-progress-line">
+            <div><strong>{{ task.label }}</strong><span>{{ task.total }} marta</span></div>
+            <div class="progress"><div class="progress-bar bg-success" style="width: {{ task.percent }}%"></div></div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="ziyo-panel">
+        <div class="ziyo-panel-head">
+          <h3>League taqsimoti</h3>
+          <span>Aktiv foydalanuvchilar</span>
+        </div>
+        {% for league in league_rows %}
+          <div class="ziyo-progress-line">
+            <div><strong>{{ league.label }}</strong><span>{{ league.total }} user</span></div>
+            <div class="progress"><div class="progress-bar bg-warning" style="width: {{ league.percent }}%"></div></div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="ziyo-section-label">
+    <h2>Foydalanuvchilar</h2>
+    <span>Toplar va referral yetakchilari</span>
+  </div>
+
+  <div class="row">
+    <div class="col-xl-8">
+      <div class="ziyo-panel">
+        <div class="ziyo-panel-head">
+          <h3>Top foydalanuvchilar</h3>
+          <span>Umumiy XP bo'yicha</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover text-nowrap ziyo-table">
+            <thead>
+              <tr><th>#</th><th>Ism</th><th>XP</th><th>Streak</th><th>League</th></tr>
+            </thead>
+            <tbody>
+              {% for user in top_users %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>{{ user.full_name }}</td>
+                  <td>{{ user.xp }}</td>
+                  <td>{{ user.streak }}</td>
+                  <td>{{ user.league_label }}</td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="5">Hali foydalanuvchi yo'q.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-4">
+      <div class="ziyo-panel">
+        <div class="ziyo-panel-head">
+          <h3>Referral yetakchilari</h3>
+          <span>Taklif qilgan do'stlar</span>
+        </div>
+        {% for user in referral_rows %}
+          <div class="ziyo-stat-line">
+            <strong>{{ user.full_name }}</strong>
+            <span>{{ user.referral_total }} do'st</span>
+          </div>
+        {% empty %}
+          <p class="ziyo-empty">Referral statistikasi yo'q.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="ziyo-section-label">
+    <h2>Profil kesimlari</h2>
+    <span>Maqsad, jins va viloyat bo'yicha</span>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-4">
+      <div class="ziyo-panel">
+        <div class="ziyo-panel-head"><h3>Maqsadlar</h3><span>Userlar kesimida</span></div>
+        {% for goal in goal_rows %}
+          <div class="ziyo-progress-line">
+            <div><strong>{{ goal.label }}</strong><span>{{ goal.total }} user</span></div>
+            <div class="progress"><div class="progress-bar bg-info" style="width: {{ goal.percent }}%"></div></div>
+          </div>
+        {% empty %}
+          <p class="ziyo-empty">Maqsad statistikasi yo'q.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="ziyo-panel">
+        <div class="ziyo-panel-head"><h3>Jins bo'yicha</h3><span>Profil ma'lumotlari</span></div>
+        {% for gender in gender_rows %}
+          <div class="ziyo-progress-line">
+            <div><strong>{{ gender.label }}</strong><span>{{ gender.total }} user</span></div>
+            <div class="progress"><div class="progress-bar bg-secondary" style="width: {{ gender.percent }}%"></div></div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="ziyo-panel">
+        <div class="ziyo-panel-head"><h3>Viloyatlar</h3><span>Top hududlar</span></div>
+        {% for region in region_rows %}
+          <div class="ziyo-progress-line">
+            <div><strong>{{ region.label }}</strong><span>{{ region.total }} user</span></div>
+            <div class="progress"><div class="progress-bar bg-primary" style="width: {{ region.percent }}%"></div></div>
+          </div>
+        {% empty %}
+          <p class="ziyo-empty">Viloyat statistikasi yo'q.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="ziyo-section-label">
+    <h2>Aktivlik</h2>
+    <span>Achievement va oxirgi hisobotlar</span>
+  </div>
+
+  <div class="row">
+    <div class="col-xl-5">
+      <div class="ziyo-panel">
+        <div class="ziyo-panel-head">
+          <h3>Achievement statistikasi</h3>
+          <span>Ochilgan badge'lar</span>
+        </div>
+        {% for achievement in achievement_rows %}
+          <div class="ziyo-progress-line">
+            <div><strong>{{ achievement.label }}</strong><span>{{ achievement.total }} marta</span></div>
+            <div class="progress"><div class="progress-bar bg-warning" style="width: {{ achievement.percent }}%"></div></div>
+          </div>
+        {% empty %}
+          <p class="ziyo-empty">Hali achievement ochilmagan.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="col-xl-7">
+      <div class="ziyo-panel">
+        <div class="ziyo-panel-head">
+          <h3>Oxirgi hisobotlar</h3>
+          <span>Eng yangi aktivlik</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover text-nowrap ziyo-table">
+            <thead>
+              <tr><th>Sana</th><th>Foydalanuvchi</th><th>XP</th><th>Vazifalar</th></tr>
+            </thead>
+            <tbody>
+              {% for report in latest_reports %}
+                <tr>
+                  <td>{{ report.date }}</td>
+                  <td>{{ report.user.full_name }}</td>
+                  <td>{{ report.xp_earned }}</td>
+                  <td>
+                    {% if report.wake_early %}Erta turdim · {% endif %}
+                    {% if report.prayer %}Namoz · {% endif %}
+                    {% if report.sport %}Sport · {% endif %}
+                    {% if report.book %}Kitob · {% endif %}
+                    {% if report.goal_written %}Maqsad yozdim{% endif %}
+                  </td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="4">Hali hisobot yo'q.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

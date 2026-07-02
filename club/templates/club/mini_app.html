@@ -1,0 +1,210 @@
+{% load static %}
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ brand }}</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="{% static 'club/app.css' %}">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="app-header">
+      <div>
+        <p class="brand">{{ brand }}</p>
+        <h1 id="screenTitle">Bugungi hisobot</h1>
+      </div>
+      <button class="ghost-button compact" id="refreshBtn" type="button">Yangilash</button>
+    </header>
+
+    <section class="summary-card">
+      <div class="summary-main">
+        <span class="label">Bugungi holat</span>
+        <strong id="heroName">Salom</strong>
+        <p>{{ slogan }}</p>
+      </div>
+      <div class="summary-grid">
+        <div>
+          <strong id="xpValue">0</strong>
+          <span>XP</span>
+        </div>
+        <div>
+          <strong id="streakValue">0</strong>
+          <span>Streak</span>
+        </div>
+        <div>
+          <strong id="rankValue">#0</strong>
+          <span>O'rin</span>
+        </div>
+      </div>
+      <div class="league-strip">
+        <div>
+          <span>League</span>
+          <strong id="leagueValue">Bronze</strong>
+        </div>
+        <div class="league-progress">
+          <span id="leagueProgress"></span>
+        </div>
+        <small id="nextLeagueText">Keyingi bosqich</small>
+      </div>
+    </section>
+
+    <section id="registerPanel" class="sheet hidden">
+      <div class="section-heading">
+        <span>1-qadam</span>
+        <h2>Profil ma'lumotlari</h2>
+        <p>Reyting va maqsadlar to'g'ri yurishi uchun kerak.</p>
+      </div>
+      <div class="form-grid">
+        <label>Ism
+          <input id="fullNameInput" type="text" autocomplete="name" placeholder="Ismingiz">
+        </label>
+        <label>Yosh
+          <input id="ageInput" type="number" min="7" max="100" placeholder="25">
+        </label>
+        <label>Jins
+          <select id="genderInput">
+            <option value="male">Erkak</option>
+            <option value="female">Ayol</option>
+            <option value="other">Aytilmagan</option>
+          </select>
+        </label>
+        <label>Viloyat
+          <input id="regionInput" type="text" placeholder="Toshkent">
+        </label>
+        <label class="wide">Asosiy maqsad
+          <select id="goalInput">
+            {% for value, label in goals %}
+              <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+      <button class="primary-button" id="saveProfileBtn" type="button">Profilni saqlash</button>
+    </section>
+
+    <section class="tab-view" id="homeTab">
+      <div class="sheet report-sheet">
+        <div class="section-heading row">
+          <div>
+            <span>Kunlik maksimum: 100 XP</span>
+            <h2>Bugun nimalar bajarildi?</h2>
+          </div>
+          <strong class="status-badge" id="reportStatus">Kutilmoqda</strong>
+        </div>
+        <div class="task-progress">
+          <div>
+            <span id="selectedTaskCount">0/5 vazifa</span>
+            <strong id="selectedXp">0 XP</strong>
+          </div>
+          <div class="task-progress-track"><span id="selectedXpBar"></span></div>
+        </div>
+        <div class="task-list" id="taskList"></div>
+        <button class="primary-button" id="submitReportBtn" type="button">Bugungi hisobotni topshirish</button>
+      </div>
+
+      <div class="story-card hidden" id="storyPanel">
+        <span class="brand">ZIYO | INTIZOM CLUB</span>
+        <h2>Bugungi natija</h2>
+        <p id="storyTasks"></p>
+        <strong id="storyXp">+0 XP</strong>
+        <small id="storyMeta"></small>
+        <button class="ghost-button" id="shareStoryBtn" type="button">Storyga ulashish</button>
+      </div>
+
+      <div class="sheet">
+        <div class="section-heading row">
+          <div>
+            <span>Badge</span>
+            <h2>Achievement</h2>
+          </div>
+          <strong class="count-pill" id="achievementCount">0</strong>
+        </div>
+        <div class="badge-grid" id="achievementList"></div>
+      </div>
+    </section>
+
+    <section class="tab-view hidden" id="ratingTab">
+      <div class="sheet">
+        <div class="section-heading row">
+          <div>
+            <span>Sog'lom raqobat</span>
+            <h2>Reyting jadvali</h2>
+          </div>
+        </div>
+        <div class="rating-tabs" id="ratingPeriod">
+          <button class="rating-tab active" data-period="all" type="button">Umumiy</button>
+          <button class="rating-tab" data-period="week" type="button">Haftalik</button>
+          <button class="rating-tab" data-period="month" type="button">Oylik</button>
+          <button class="rating-tab" data-period="year" type="button">Yillik</button>
+        </div>
+        <div class="leaderboard" id="leaderboard"></div>
+      </div>
+    </section>
+
+    <section class="tab-view hidden" id="historyTab">
+      <div class="sheet">
+        <div class="section-heading row">
+          <div>
+            <span>Oxirgi 5 hafta</span>
+            <h2>Kunlik tarix</h2>
+            <p>Har katakda sana bor. Yashil kunlar hisobot topshirilgan.</p>
+          </div>
+          <strong class="count-pill" id="historyDoneCount">0 kun</strong>
+        </div>
+        <div class="history-legend">
+          <span><i class="done-dot"></i>Bajarildi</span>
+          <span><i class="miss-dot"></i>O'tkazildi</span>
+          <span><i class="today-dot"></i>Bugun</span>
+        </div>
+        <div class="history-card">
+          <div class="history-weekdays">
+            <span>D</span>
+            <span>S</span>
+            <span>Ch</span>
+            <span>P</span>
+            <span>J</span>
+            <span>Sh</span>
+            <span>Ya</span>
+          </div>
+          <div class="history-grid" id="calendarLite"></div>
+        </div>
+        <h3 class="history-subtitle">Oxirgi hisobotlar</h3>
+        <div class="history-list" id="historyList"></div>
+      </div>
+    </section>
+
+    <section class="tab-view hidden" id="profileTab">
+      <div class="profile-card">
+        <div class="avatar-mark" id="avatarMark">Z</div>
+        <div>
+          <span>Profil</span>
+          <h2 id="profileName">Foydalanuvchi</h2>
+          <p id="profileGoal">Intizom</p>
+        </div>
+      </div>
+      <div class="sheet profile-list" id="profileList"></div>
+      <div class="sheet">
+        <div class="section-heading">
+          <span>Referral</span>
+          <h2>Do'st taklif qilish</h2>
+          <p>Taklif havolangiz orqali kelgan do'stlar achievement ochadi.</p>
+        </div>
+        <div class="copy-box" id="referralText"></div>
+        <button class="ghost-button" id="copyReferralBtn" type="button">Linkni nusxalash</button>
+      </div>
+    </section>
+
+    <nav class="section-nav" aria-label="Bo'limlar">
+      <button class="nav-item active" data-tab="home" type="button"><span>H</span><small>Hisobot</small></button>
+      <button class="nav-item" data-tab="rating" type="button"><span>R</span><small>Reyting</small></button>
+      <button class="nav-item" data-tab="history" type="button"><span>T</span><small>Tarix</small></button>
+      <button class="nav-item" data-tab="profile" type="button"><span>P</span><small>Profil</small></button>
+    </nav>
+  </main>
+
+  <div class="toast hidden" id="toast"></div>
+  <script src="{% static 'club/app.js' %}"></script>
+</body>
+</html>

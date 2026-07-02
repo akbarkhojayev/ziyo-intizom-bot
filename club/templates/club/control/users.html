@@ -1,0 +1,22 @@
+{% extends "club/control/base.html" %}
+{% block heading %}Userlar{% endblock %}
+{% block content %}
+<form class="search-card" method="get">
+  <input name="q" value="{{ query }}" placeholder="Ism, username, telegram ID yoki viloyat">
+  <button>Qidirish</button>
+</form>
+<section class="panel">
+  <div class="panel-head"><h2>Foydalanuvchilar</h2><span>{{ users|length }} ta ko'rsatildi</span></div>
+  <div class="list">
+    {% for user in users %}
+      <a class="list-row" href="{% url 'club:control_user_detail' user.pk %}">
+        <div>
+          <strong>{{ user.full_name }}</strong>
+          <span>{{ user.telegram_id }} · {{ user.region|default:"Viloyat yo'q" }} · {{ user.league_label }}</span>
+        </div>
+        <b>{{ user.xp }} XP</b>
+      </a>
+    {% empty %}<p class="empty">User topilmadi.</p>{% endfor %}
+  </div>
+</section>
+{% endblock %}

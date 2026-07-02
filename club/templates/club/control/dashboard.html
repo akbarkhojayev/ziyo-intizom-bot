@@ -1,0 +1,66 @@
+{% extends "club/control/base.html" %}
+{% block heading %}Dashboard{% endblock %}
+{% block content %}
+<section class="kpi-grid">
+  {% for card in cards %}
+    <div class="kpi-card"><span>{{ card.label }}</span><strong>{{ card.value }}</strong></div>
+  {% endfor %}
+</section>
+
+<section class="quick-grid">
+  {% for item in quick_stats %}
+    <div><span>{{ item.label }}</span><strong>{{ item.value }}</strong></div>
+  {% endfor %}
+</section>
+
+<div class="layout-grid">
+  <section class="panel wide">
+    <div class="panel-head"><h2>Oxirgi 7 kun XP</h2><span>Kunlik trend</span></div>
+    <div class="bars">
+      {% for day in daily_rows %}
+        <div class="bar-item">
+          <div class="bar-track"><span style="height: {{ day.percent }}%"></span></div>
+          <strong>{{ day.xp }}</strong>
+          <small>{{ day.date }}</small>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h2>Vazifalar</h2><span>Bajarilish</span></div>
+    {% for task in tasks %}
+      <div class="progress-row">
+        <div><strong>{{ task.label }}</strong><span>{{ task.value }}</span></div>
+        <div class="progress"><i style="width: {{ task.percent }}%"></i></div>
+      </div>
+    {% endfor %}
+  </section>
+</div>
+
+<div class="layout-grid">
+  <section class="panel">
+    <div class="panel-head"><h2>Top userlar</h2><span>XP bo'yicha</span></div>
+    <div class="list">
+      {% for user in top_users %}
+        <a class="list-row" href="{% url 'club:control_user_detail' user.pk %}">
+          <div><strong>{{ user.full_name }}</strong><span>{{ user.league_label }} · {{ user.streak }} streak</span></div>
+          <b>{{ user.xp }} XP</b>
+        </a>
+      {% empty %}<p class="empty">Hali user yo'q.</p>{% endfor %}
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h2>Oxirgi hisobotlar</h2><span>Real vaqt aktivlik</span></div>
+    <div class="list">
+      {% for report in latest_reports %}
+        <div class="list-row">
+          <div><strong>{{ report.user.full_name }}</strong><span>{{ report.date }}</span></div>
+          <b>+{{ report.xp_earned }}</b>
+        </div>
+      {% empty %}<p class="empty">Hali hisobot yo'q.</p>{% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

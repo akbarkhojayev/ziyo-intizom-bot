@@ -1,0 +1,83 @@
+{% load static %}
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}ZIYO Admin{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'club/control.css' %}">
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="{% url 'club:control_dashboard' %}">
+      <i>ZI</i>
+      <span>
+        <small>ZIYO | INTIZOM</small>
+        <strong>Control</strong>
+      </span>
+    </a>
+    <nav class="side-nav">
+      <a class="{% if request.resolver_match.url_name == 'control_dashboard' %}active{% endif %}" href="{% url 'club:control_dashboard' %}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h6V4H4v9Zm0 7h6v-5H4v5Zm10 0h6v-9h-6v9Zm0-16v5h6V4h-6Z"/></svg>
+        <span>Dashboard</span>
+      </a>
+      <a class="{% if request.resolver_match.url_name == 'control_users' or request.resolver_match.url_name == 'control_user_detail' %}active{% endif %}" href="{% url 'club:control_users' %}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4 0-7 2-7 4.5V20h14v-1.5C19 16 16 14 12 14Z"/></svg>
+        <span>Userlar</span>
+      </a>
+      <a class="{% if request.resolver_match.url_name == 'control_reports' %}active{% endif %}" href="{% url 'club:control_reports' %}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18H6V3Zm3 4v2h6V7H9Zm0 4v2h6v-2H9Zm0 4v2h4v-2H9Z"/></svg>
+        <span>Hisobotlar</span>
+      </a>
+      <a class="{% if request.resolver_match.url_name == 'control_announcements' %}active{% endif %}" href="{% url 'club:control_announcements' %}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l8 4V6l-8 4H4Zm13-2.5v9a5 5 0 0 0 0-9Z"/></svg>
+        <span>E'lonlar</span>
+      </a>
+      <a href="/app/" target="_blank">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm2 3v14h6V5H9Z"/></svg>
+        <span>Mini App</span>
+      </a>
+    </nav>
+    <a class="logout-link" href="{% url 'club:control_logout' %}">Chiqish</a>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <span class="eyebrow">ZIYO | INTIZOM CLUB</span>
+        <h1>{% block heading %}Dashboard{% endblock %}</h1>
+      </div>
+      <a href="{% url 'club:control_logout' %}">Chiqish</a>
+    </header>
+
+    {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+          <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <nav class="bottom-nav">
+    <a class="{% if request.resolver_match.url_name == 'control_dashboard' %}active{% endif %}" href="{% url 'club:control_dashboard' %}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h6V4H4v9Zm0 7h6v-5H4v5Zm10 0h6v-9h-6v9Zm0-16v5h6V4h-6Z"/></svg>
+      <small>Dashboard</small>
+    </a>
+    <a class="{% if request.resolver_match.url_name == 'control_users' or request.resolver_match.url_name == 'control_user_detail' %}active{% endif %}" href="{% url 'club:control_users' %}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4 0-7 2-7 4.5V20h14v-1.5C19 16 16 14 12 14Z"/></svg>
+      <small>Userlar</small>
+    </a>
+    <a class="{% if request.resolver_match.url_name == 'control_reports' %}active{% endif %}" href="{% url 'club:control_reports' %}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18H6V3Zm3 4v2h6V7H9Zm0 4v2h6v-2H9Zm0 4v2h4v-2H9Z"/></svg>
+      <small>Hisobot</small>
+    </a>
+    <a class="{% if request.resolver_match.url_name == 'control_announcements' %}active{% endif %}" href="{% url 'club:control_announcements' %}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h3l8 4V6l-8 4H4Zm13-2.5v9a5 5 0 0 0 0-9Z"/></svg>
+      <small>E'lon</small>
+    </a>
+  </nav>
+</body>
+</html>
