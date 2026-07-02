@@ -51,6 +51,11 @@ Cron yoki systemd timer orqali:
 .venv/bin/python manage.py send_reminders evening
 ```
 
+Production server uchun systemd timer fayllari `deploy/systemd/` ichida:
+
+- `ziyo-reminder-morning.timer` - har kuni `06:00 Asia/Tashkent`
+- `ziyo-reminder-evening.timer` - har kuni `21:00 Asia/Tashkent`
+
 TZ bo'yicha tavsiya qilingan vaqtlar:
 
 - `06:00` - motivatsiya

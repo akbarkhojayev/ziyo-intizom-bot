@@ -1,0 +1,11 @@
+[Unit]
+Description=ZIYO reminder sender (%i)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/ubuntu/ziyo-intizom-bot
+EnvironmentFile=/home/ubuntu/ziyo-intizom-bot/.env
+ExecStart=/home/ubuntu/ziyo-intizom-bot/.venv/bin/python manage.py send_reminders %i
+

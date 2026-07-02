@@ -1,0 +1,11 @@
+[Unit]
+Description=ZIYO morning reminder at 06:00 Asia/Tashkent
+
+[Timer]
+OnCalendar=*-*-* 06:00:00 Asia/Tashkent
+Persistent=true
+Unit=ziyo-reminder@morning.service
+
+[Install]
+WantedBy=timers.target
+
