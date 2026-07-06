@@ -50,54 +50,66 @@
       </div>
     </section>
 
-    <section id="registerPanel" class="sheet onboarding-card hidden">
-      <div class="section-heading">
+    <section id="registerPanel" class="onboarding-page hidden">
+      <div class="onboarding-hero">
         <span>ZIYO | INTIZOM CLUB</span>
-        <h2>Ro'yxatdan o'tish</h2>
-        <p>Ism Telegram profilingizdan avtomatik olinadi. Xohlasangiz o'zgartirib, qolgan ma'lumotlarni tanlab boshlang.</p>
+        <h2>Intizom profilingizni yarating</h2>
+        <p>Ismingiz Telegramdan avtomatik olinadi. Qolgan ma'lumotlarni tanlang va kundalik XP tizimiga kiring.</p>
+        <div class="onboarding-benefits">
+          <div><b>100 XP</b><small>kunlik maksimum</small></div>
+          <div><b>Streak</b><small>ketma-ketlik nazorati</small></div>
+          <div><b>Reyting</b><small>sog'lom raqobat</small></div>
+        </div>
       </div>
-      <div class="form-grid">
-        <label>Ism
-          <input id="fullNameInput" type="text" autocomplete="name" placeholder="Ismingiz">
-        </label>
-        <label>Yosh
-          <input id="ageInput" type="number" min="7" max="100" placeholder="25">
-        </label>
-        <label>Jins
-          <select id="genderInput">
-            <option value="male">Erkak</option>
-            <option value="female">Ayol</option>
-            <option value="other">Aytilmagan</option>
-          </select>
-        </label>
-        <label>Viloyat
-          <select id="regionInput">
-            <option value="">Viloyatni tanlang</option>
-            <option value="Toshkent shahri">Toshkent shahri</option>
-            <option value="Toshkent viloyati">Toshkent viloyati</option>
-            <option value="Andijon">Andijon</option>
-            <option value="Buxoro">Buxoro</option>
-            <option value="Farg'ona">Farg'ona</option>
-            <option value="Jizzax">Jizzax</option>
-            <option value="Namangan">Namangan</option>
-            <option value="Navoiy">Navoiy</option>
-            <option value="Qashqadaryo">Qashqadaryo</option>
-            <option value="Qoraqalpog'iston">Qoraqalpog'iston</option>
-            <option value="Samarqand">Samarqand</option>
-            <option value="Sirdaryo">Sirdaryo</option>
-            <option value="Surxondaryo">Surxondaryo</option>
-            <option value="Xorazm">Xorazm</option>
-          </select>
-        </label>
-        <label class="wide">Asosiy maqsad
-          <select id="goalInput">
-            {% for value, label in goals %}
-              <option value="{{ value }}">{{ label }}</option>
-            {% endfor %}
-          </select>
-        </label>
+      <div class="onboarding-form">
+        <div class="section-heading">
+          <span>Ro'yxatdan o'tish</span>
+          <h2>Ma'lumotlarni tasdiqlang</h2>
+          <p>Keyin xohlagan vaqtda profil bo'limidan o'zgartira olasiz.</p>
+        </div>
+        <div class="form-grid">
+          <label>Ism
+            <input id="fullNameInput" type="text" autocomplete="name" placeholder="Ismingiz">
+          </label>
+          <label>Yosh
+            <input id="ageInput" type="number" min="7" max="100" placeholder="25">
+          </label>
+          <label>Jins
+            <select id="genderInput">
+              <option value="male">Erkak</option>
+              <option value="female">Ayol</option>
+              <option value="other">Aytilmagan</option>
+            </select>
+          </label>
+          <label>Viloyat
+            <select id="regionInput">
+              <option value="">Viloyatni tanlang</option>
+              <option value="Toshkent shahri">Toshkent shahri</option>
+              <option value="Toshkent viloyati">Toshkent viloyati</option>
+              <option value="Andijon">Andijon</option>
+              <option value="Buxoro">Buxoro</option>
+              <option value="Farg'ona">Farg'ona</option>
+              <option value="Jizzax">Jizzax</option>
+              <option value="Namangan">Namangan</option>
+              <option value="Navoiy">Navoiy</option>
+              <option value="Qashqadaryo">Qashqadaryo</option>
+              <option value="Qoraqalpog'iston">Qoraqalpog'iston</option>
+              <option value="Samarqand">Samarqand</option>
+              <option value="Sirdaryo">Sirdaryo</option>
+              <option value="Surxondaryo">Surxondaryo</option>
+              <option value="Xorazm">Xorazm</option>
+            </select>
+          </label>
+          <label class="wide">Asosiy maqsad
+            <select id="goalInput">
+              {% for value, label in goals %}
+                <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </label>
+        </div>
+        <button class="primary-button" id="saveProfileBtn" type="button">Boshlash</button>
       </div>
-      <button class="primary-button" id="saveProfileBtn" type="button">Boshlash</button>
     </section>
 
     <section class="tab-view" id="homeTab">

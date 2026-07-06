@@ -53,7 +53,7 @@ def mini_app(request):
             "tasks": task_payload(),
             "brand": "ZIYO | INTIZOM CLUB",
             "slogan": "Intizom motivatsiyadan kuchli.",
-            "asset_version": "20260706-onboarding-v5",
+            "asset_version": "20260706-onboarding-page-v6",
         },
     )
 
