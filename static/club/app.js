@@ -187,6 +187,43 @@ function runTrackerMarkup() {
   `;
 }
 
+function ensureRunConfirm() {
+  let modal = $("runConfirm");
+  if (modal) return modal;
+  modal = document.createElement("div");
+  modal.id = "runConfirm";
+  modal.className = "run-confirm hidden";
+  modal.innerHTML = `
+    <div class="run-confirm-backdrop" data-close-run-confirm></div>
+    <section class="run-confirm-sheet" role="dialog" aria-modal="true" aria-labelledby="runConfirmTitle">
+      <span>GPS sport tekshiruvi</span>
+      <h2 id="runConfirmTitle">Yugurishni boshlaysizmi?</h2>
+      <p>Sport XP faqat GPS orqali tasdiqlanganda beriladi. Telefoningiz lokatsiya ruxsatini so'raydi.</p>
+      <div class="run-rules">
+        <div><b>800 m</b><small>minimal masofa</small></div>
+        <div><b>6 daqiqa</b><small>minimal vaqt</small></div>
+        <div><b>3-18 km/s</b><small>normal tezlik</small></div>
+      </div>
+      <button class="primary-button" id="confirmRunStartBtn" type="button">GPS bilan boshlash</button>
+      <button class="ghost-button" id="cancelRunStartBtn" type="button">Bekor qilish</button>
+    </section>
+  `;
+  document.body.appendChild(modal);
+  return modal;
+}
+
+function openRunConfirm() {
+  if (state.user.run_today?.status === "active") {
+    startRun();
+    return;
+  }
+  ensureRunConfirm().classList.remove("hidden");
+}
+
+function closeRunConfirm() {
+  $("runConfirm")?.classList.add("hidden");
+}
+
 function renderTasks() {
   const list = $("taskList");
   list.innerHTML = "";
@@ -603,11 +640,18 @@ $("saveProfileDetailsBtn").addEventListener("click", () => saveProfile("profile"
 $("submitReportBtn").addEventListener("click", submitReport);
 $("refreshBtn").addEventListener("click", bootstrap);
 document.addEventListener("click", (event) => {
-  if (event.target.closest("#startRunBtn")) startRun();
+  if (event.target.closest("#startRunBtn")) openRunConfirm();
+  if (event.target.closest("#confirmRunStartBtn")) {
+    closeRunConfirm();
+    startRun();
+  }
+  if (event.target.closest("#cancelRunStartBtn") || event.target.closest("[data-close-run-confirm]")) {
+    closeRunConfirm();
+  }
   if (event.target.closest("#finishRunBtn")) finishRun();
   const sportCard = event.target.closest(".sport-trigger");
   if (sportCard && !event.target.closest("#startRunBtn") && !event.target.closest("#finishRunBtn")) {
-    startRun();
+    openRunConfirm();
   }
 });
 $("ratingPeriod").addEventListener("click", (event) => {

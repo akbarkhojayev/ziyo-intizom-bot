@@ -586,6 +586,80 @@ select:focus {
   background: var(--gold);
 }
 
+.run-confirm {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  align-items: end;
+  padding: 12px;
+}
+
+.run-confirm-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(10px);
+}
+
+.run-confirm-sheet {
+  position: relative;
+  width: min(520px, 100%);
+  margin: 0 auto;
+  padding: 16px;
+  border: 1px solid rgba(231, 185, 87, 0.38);
+  border-radius: var(--radius);
+  background: #181a1f;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.46);
+}
+
+.run-confirm-sheet span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.run-confirm-sheet h2 {
+  margin-bottom: 6px;
+}
+
+.run-confirm-sheet p {
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.run-rules {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.run-rules div {
+  min-width: 0;
+  padding: 10px 8px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #111318;
+}
+
+.run-rules b {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--text);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.run-rules small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.25;
+}
+
 .story-card {
   text-align: left;
   border-color: rgba(231, 185, 87, 0.45);
