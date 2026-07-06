@@ -382,7 +382,7 @@ select:focus {
 .run-tracker {
   display: grid;
   gap: 10px;
-  margin-bottom: 10px;
+  margin-top: 10px;
   padding: 12px;
   border: 1px solid rgba(83, 209, 131, 0.28);
   border-radius: var(--radius);
@@ -502,6 +502,19 @@ select:focus {
   background: #14161b;
 }
 
+.task-item-expanded {
+  display: block;
+}
+
+.task-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  color: inherit;
+}
+
 .task-item input {
   position: absolute;
   opacity: 0;
@@ -552,6 +565,10 @@ select:focus {
 
 .task-item.gps-required .task-xp {
   color: var(--muted);
+}
+
+.task-item-expanded.gps-required {
+  opacity: 1;
 }
 
 .story-card {

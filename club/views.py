@@ -21,6 +21,22 @@ MIN_RUN_SPEED_KMH = 3
 MAX_RUN_SPEED_KMH = 18
 MAX_GPS_ACCURACY_M = 80
 MAX_POINT_SPEED_KMH = 30
+REGION_CHOICES = {
+    "Toshkent shahri",
+    "Toshkent viloyati",
+    "Andijon",
+    "Buxoro",
+    "Farg'ona",
+    "Jizzax",
+    "Namangan",
+    "Navoiy",
+    "Qashqadaryo",
+    "Qoraqalpog'iston",
+    "Samarqand",
+    "Sirdaryo",
+    "Surxondaryo",
+    "Xorazm",
+}
 
 
 def landing(request):
@@ -37,7 +53,7 @@ def mini_app(request):
             "tasks": task_payload(),
             "brand": "ZIYO | INTIZOM CLUB",
             "slogan": "Intizom motivatsiyadan kuchli.",
-            "asset_version": "20260706-gps-run-v1",
+            "asset_version": "20260706-gps-layout-v2",
         },
     )
 
@@ -334,7 +350,8 @@ def api_register(request):
     user.full_name = data.get("full_name", user.full_name).strip() or user.full_name
     user.age = int(data["age"]) if str(data.get("age", "")).isdigit() else user.age
     user.gender = data.get("gender", user.gender)
-    user.region = data.get("region", user.region).strip()
+    region = data.get("region", user.region).strip()
+    user.region = region if region in REGION_CHOICES else user.region
     user.main_goal = data.get("main_goal", user.main_goal)
     user.save(update_fields=["full_name", "age", "gender", "region", "main_goal", "updated_at"])
     return JsonResponse({"ok": True, "user": user_payload(user)})

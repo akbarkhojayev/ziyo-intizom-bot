@@ -71,7 +71,23 @@
           </select>
         </label>
         <label>Viloyat
-          <input id="regionInput" type="text" placeholder="Toshkent">
+          <select id="regionInput">
+            <option value="">Viloyatni tanlang</option>
+            <option value="Toshkent shahri">Toshkent shahri</option>
+            <option value="Toshkent viloyati">Toshkent viloyati</option>
+            <option value="Andijon">Andijon</option>
+            <option value="Buxoro">Buxoro</option>
+            <option value="Farg'ona">Farg'ona</option>
+            <option value="Jizzax">Jizzax</option>
+            <option value="Namangan">Namangan</option>
+            <option value="Navoiy">Navoiy</option>
+            <option value="Qashqadaryo">Qashqadaryo</option>
+            <option value="Qoraqalpog'iston">Qoraqalpog'iston</option>
+            <option value="Samarqand">Samarqand</option>
+            <option value="Sirdaryo">Sirdaryo</option>
+            <option value="Surxondaryo">Surxondaryo</option>
+            <option value="Xorazm">Xorazm</option>
+          </select>
         </label>
         <label class="wide">Asosiy maqsad
           <select id="goalInput">
@@ -99,22 +115,6 @@
             <strong id="selectedXp">0 XP</strong>
           </div>
           <div class="task-progress-track"><span id="selectedXpBar"></span></div>
-        </div>
-        <div class="run-tracker" id="runTracker">
-          <div>
-            <span>GPS sport tekshiruvi</span>
-            <strong id="runStatusText">Yugurish tasdiqlanmagan</strong>
-            <small id="runRuleText">Kamida 800 m va 6 daqiqa yugurish kerak.</small>
-          </div>
-          <div class="run-stats">
-            <div><b id="runDistance">0 m</b><small>Masofa</small></div>
-            <div><b id="runDuration">0:00</b><small>Vaqt</small></div>
-            <div><b id="runSpeed">0 km/s</b><small>Tezlik</small></div>
-          </div>
-          <div class="run-actions">
-            <button class="ghost-button compact" id="startRunBtn" type="button">Yugurishni boshlash</button>
-            <button class="ghost-button compact hidden" id="finishRunBtn" type="button">Tugatish</button>
-          </div>
         </div>
         <div class="task-list" id="taskList"></div>
         <button class="primary-button" id="submitReportBtn" type="button">Bugungi hisobotni topshirish</button>
@@ -201,6 +201,55 @@
         </div>
       </div>
       <div class="sheet profile-list" id="profileList"></div>
+      <div class="sheet">
+        <div class="section-heading">
+          <span>Profil sozlamalari</span>
+          <h2>Ma'lumotlarni yangilash</h2>
+          <p>Viloyatni ro'yxatdan tanlang, reyting va statistika aniq yuradi.</p>
+        </div>
+        <div class="form-grid">
+          <label>Ism
+            <input id="profileFullNameInput" type="text" autocomplete="name" placeholder="Ismingiz">
+          </label>
+          <label>Yosh
+            <input id="profileAgeInput" type="number" min="7" max="100" placeholder="25">
+          </label>
+          <label>Jins
+            <select id="profileGenderInput">
+              <option value="male">Erkak</option>
+              <option value="female">Ayol</option>
+              <option value="other">Aytilmagan</option>
+            </select>
+          </label>
+          <label>Viloyat
+            <select id="profileRegionInput">
+              <option value="">Viloyatni tanlang</option>
+              <option value="Toshkent shahri">Toshkent shahri</option>
+              <option value="Toshkent viloyati">Toshkent viloyati</option>
+              <option value="Andijon">Andijon</option>
+              <option value="Buxoro">Buxoro</option>
+              <option value="Farg'ona">Farg'ona</option>
+              <option value="Jizzax">Jizzax</option>
+              <option value="Namangan">Namangan</option>
+              <option value="Navoiy">Navoiy</option>
+              <option value="Qashqadaryo">Qashqadaryo</option>
+              <option value="Qoraqalpog'iston">Qoraqalpog'iston</option>
+              <option value="Samarqand">Samarqand</option>
+              <option value="Sirdaryo">Sirdaryo</option>
+              <option value="Surxondaryo">Surxondaryo</option>
+              <option value="Xorazm">Xorazm</option>
+            </select>
+          </label>
+          <label class="wide">Asosiy maqsad
+            <select id="profileGoalInput">
+              {% for value, label in goals %}
+                <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </label>
+        </div>
+        <button class="primary-button" id="saveProfileDetailsBtn" type="button">Profilni yangilash</button>
+      </div>
       <div class="sheet">
         <div class="section-heading">
           <span>Referral</span>

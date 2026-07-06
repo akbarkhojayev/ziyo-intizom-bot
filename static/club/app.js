@@ -118,7 +118,6 @@ async function bootstrap() {
 function renderAll() {
   renderHeader();
   renderRegistration();
-  renderRunTracker();
   renderTasks();
   renderAchievements();
   renderLeaderboard(state.leaderboard);
@@ -165,6 +164,29 @@ function renderRegistration() {
   $("goalInput").value = state.user.main_goal || "discipline";
 }
 
+function runTrackerMarkup() {
+  return `
+    <div class="run-tracker" id="runTracker">
+      <div class="run-head">
+        <div>
+          <span>GPS sport tekshiruvi</span>
+          <strong id="runStatusText">Yugurish tasdiqlanmagan</strong>
+          <small id="runRuleText">Kamida 800 m va 6 daqiqa yugurish kerak.</small>
+        </div>
+      </div>
+      <div class="run-stats">
+        <div><b id="runDistance">0 m</b><small>Masofa</small></div>
+        <div><b id="runDuration">0:00</b><small>Vaqt</small></div>
+        <div><b id="runSpeed">0 km/s</b><small>Tezlik</small></div>
+      </div>
+      <div class="run-actions">
+        <button class="ghost-button compact" id="startRunBtn" type="button">Yugurishni boshlash</button>
+        <button class="ghost-button compact hidden" id="finishRunBtn" type="button">Tugatish</button>
+      </div>
+    </div>
+  `;
+}
+
 function renderTasks() {
   const list = $("taskList");
   list.innerHTML = "";
@@ -180,6 +202,24 @@ function renderTasks() {
   state.tasks.forEach((task) => {
     const needsGps = task.code === "sport" && !sportVerified && !reported;
     const checked = selectedCodes.has(task.code) || (task.code === "sport" && sportVerified && !reported);
+    if (task.code === "sport") {
+      const item = document.createElement("div");
+      item.className = `task-item task-item-expanded ${needsGps ? "gps-required" : ""}`;
+      item.innerHTML = `
+        <label class="task-row">
+          <input type="checkbox" value="${task.code}" ${reported || needsGps ? "disabled" : ""} ${checked ? "checked" : ""}>
+          <span class="task-check">✓</span>
+          <span class="task-copy">
+            <strong>${task.label}</strong>
+            <small>${needsGps ? "GPS yugurish tasdiqlansa avtomatik belgilanadi" : "GPS orqali tasdiqlangan sport"}</small>
+          </span>
+          <span class="task-xp">+${task.xp}</span>
+        </label>
+        ${reported ? "" : runTrackerMarkup()}
+      `;
+      list.appendChild(item);
+      return;
+    }
     const label = document.createElement("label");
     label.className = `task-item ${needsGps ? "gps-required" : ""}`;
     label.innerHTML = `
@@ -194,6 +234,7 @@ function renderTasks() {
     list.appendChild(label);
   });
 
+  renderRunTracker();
   updateSelectedProgress();
   list.querySelectorAll("input").forEach((input) => {
     input.addEventListener("change", updateSelectedProgress);
@@ -213,6 +254,7 @@ function formatDuration(seconds) {
 function renderRunTracker() {
   const run = state.user.run_today;
   const panel = $("runTracker");
+  if (!panel) return;
   panel.classList.toggle("active", run?.status === "active");
   panel.classList.toggle("verified", run?.status === "verified");
   panel.classList.toggle("rejected", run?.status === "rejected");
@@ -311,8 +353,14 @@ function renderProfile() {
   $("profileName").textContent = state.user.full_name;
   $("profileGoal").textContent = state.user.main_goal_label;
   $("avatarMark").textContent = (state.user.full_name || "Z").trim().slice(0, 1).toUpperCase();
+  $("profileFullNameInput").value = state.user.full_name || "";
+  $("profileAgeInput").value = state.user.age || "";
+  $("profileGenderInput").value = state.user.gender || "other";
+  $("profileRegionInput").value = state.user.region || "";
+  $("profileGoalInput").value = state.user.main_goal || "discipline";
   const rows = [
     ["Ism", state.user.full_name],
+    ["Viloyat", state.user.region || "Tanlanmagan"],
     ["XP", state.user.xp],
     ["Reyting", `#${state.user.rank}`],
     ["Streak", `${state.user.streak} kun`],
@@ -411,14 +459,29 @@ function renderHistory() {
   }
 }
 
-async function saveProfile() {
+async function saveProfile(source = "register") {
+  const ids = source === "profile"
+    ? {
+        fullName: "profileFullNameInput",
+        age: "profileAgeInput",
+        gender: "profileGenderInput",
+        region: "profileRegionInput",
+        goal: "profileGoalInput",
+      }
+    : {
+        fullName: "fullNameInput",
+        age: "ageInput",
+        gender: "genderInput",
+        region: "regionInput",
+        goal: "goalInput",
+      };
   const payload = {
     telegram_id: state.user.telegram_id,
-    full_name: $("fullNameInput").value,
-    age: $("ageInput").value,
-    gender: $("genderInput").value,
-    region: $("regionInput").value,
-    main_goal: $("goalInput").value,
+    full_name: $(ids.fullName).value,
+    age: $(ids.age).value,
+    gender: $(ids.gender).value,
+    region: $(ids.region).value,
+    main_goal: $(ids.goal).value,
   };
   const data = await postJSON("/api/register/", payload);
   state.user = data.user;
@@ -535,11 +598,14 @@ document.addEventListener("click", (event) => {
   if (tab.dataset.tab === "rating") loadRanking();
 });
 
-$("saveProfileBtn").addEventListener("click", saveProfile);
+$("saveProfileBtn").addEventListener("click", () => saveProfile("register"));
+$("saveProfileDetailsBtn").addEventListener("click", () => saveProfile("profile"));
 $("submitReportBtn").addEventListener("click", submitReport);
 $("refreshBtn").addEventListener("click", bootstrap);
-$("startRunBtn").addEventListener("click", startRun);
-$("finishRunBtn").addEventListener("click", finishRun);
+document.addEventListener("click", (event) => {
+  if (event.target.closest("#startRunBtn")) startRun();
+  if (event.target.closest("#finishRunBtn")) finishRun();
+});
 $("ratingPeriod").addEventListener("click", (event) => {
   const button = event.target.closest(".rating-tab");
   if (!button) return;
