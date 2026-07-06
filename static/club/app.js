@@ -7,6 +7,7 @@ const state = {
   telegramUser: null,
   runWatchId: null,
   runTimerId: null,
+  sportRunOpen: false,
 };
 
 const screenTitles = {
@@ -259,19 +260,20 @@ function renderTasks() {
     const needsGps = task.code === "sport" && !sportVerified && !reported;
     const checked = selectedCodes.has(task.code) || (task.code === "sport" && sportVerified && !reported);
     if (task.code === "sport") {
+      const showRunCard = !reported && (state.sportRunOpen || Boolean(state.user.run_today));
       const item = document.createElement("div");
-      item.className = `task-item task-item-expanded ${needsGps ? "gps-required sport-trigger" : ""}`;
+      item.className = `task-item task-item-expanded sport-task ${needsGps ? "gps-required sport-trigger" : ""} ${showRunCard ? "open" : ""}`;
       item.innerHTML = `
-        <label class="task-row">
-          <input type="checkbox" value="${task.code}" ${reported || needsGps ? "disabled" : ""} ${checked ? "checked" : ""}>
-          <span class="task-check">✓</span>
+        <div class="task-row">
+          ${checked ? `<input type="checkbox" value="${task.code}" checked hidden>` : ""}
+          <span class="task-check">${checked ? "✓" : "▶"}</span>
           <span class="task-copy">
             <strong>${task.label}</strong>
-            <small>${needsGps ? "Sportni bosib GPS yugurishni boshlang" : "GPS orqali tasdiqlangan sport"}</small>
+            <small>${checked ? "GPS orqali tasdiqlandi" : "Bosilganda yugurish paneli ochiladi"}</small>
           </span>
           <span class="task-xp">+${task.xp}</span>
-        </label>
-        ${reported ? "" : runTrackerMarkup()}
+        </div>
+        ${showRunCard ? runTrackerMarkup() : ""}
       `;
       list.appendChild(item);
       return;
@@ -613,6 +615,7 @@ async function startRun() {
   try {
     const data = await postJSON("/api/run/start/", {telegram_id: state.user.telegram_id});
     state.user.run_today = data.run;
+    state.sportRunOpen = true;
     renderRunTracker();
     navigator.geolocation.getCurrentPosition(sendRunPoint, () => {
       showToast("GPS ruxsatini bering");
@@ -639,6 +642,7 @@ async function finishRun() {
       run_id: run.id,
     });
     state.user = data.user;
+    state.sportRunOpen = true;
     renderAll();
     showToast(data.run.is_verified ? "Sport GPS orqali tasdiqlandi" : "Yugurish shartlari bajarilmadi");
   } catch (error) {
@@ -682,7 +686,8 @@ document.addEventListener("click", (event) => {
   if (event.target.closest("#finishRunBtn")) finishRun();
   const sportCard = event.target.closest(".sport-trigger");
   if (sportCard && !event.target.closest("#startRunBtn") && !event.target.closest("#finishRunBtn")) {
-    openRunConfirm();
+    state.sportRunOpen = true;
+    renderTasks();
   }
 });
 $("ratingPeriod").addEventListener("click", (event) => {

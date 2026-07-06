@@ -688,6 +688,11 @@ select:focus {
   border-color: rgba(231, 185, 87, 0.42);
 }
 
+.sport-task.open {
+  border-color: rgba(231, 185, 87, 0.65);
+  background: rgba(231, 185, 87, 0.08);
+}
+
 .sport-trigger .task-row {
   border-radius: 7px;
 }
@@ -696,6 +701,10 @@ select:focus {
   color: var(--ink);
   border-color: var(--gold);
   background: var(--gold);
+}
+
+.sport-task .task-row {
+  cursor: pointer;
 }
 
 .run-confirm {
