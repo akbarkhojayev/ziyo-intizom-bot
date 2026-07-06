@@ -1,4 +1,5 @@
 import json
+import math
 from io import BytesIO
 
 from django.conf import settings
@@ -10,8 +11,16 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.http import require_GET, require_POST, require_safe
 from PIL import Image, ImageDraw, ImageFont
 
-from .models import Achievement, DailyReport, Goal, TaskCode, UserProfile
+from .models import Achievement, DailyReport, Goal, RunSession, TaskCode, UserProfile
 from .services import get_or_create_telegram_user, leaderboard, task_payload, today_stats
+
+
+MIN_RUN_DISTANCE_M = 800
+MIN_RUN_DURATION_S = 360
+MIN_RUN_SPEED_KMH = 3
+MAX_RUN_SPEED_KMH = 18
+MAX_GPS_ACCURACY_M = 80
+MAX_POINT_SPEED_KMH = 30
 
 
 def landing(request):
@@ -28,7 +37,7 @@ def mini_app(request):
             "tasks": task_payload(),
             "brand": "ZIYO | INTIZOM CLUB",
             "slogan": "Intizom motivatsiyadan kuchli.",
-            "asset_version": "20260702-story-v2",
+            "asset_version": "20260706-gps-run-v1",
         },
     )
 
@@ -162,6 +171,7 @@ def api_story_image(request, telegram_id=None):
 def user_payload(user: UserProfile):
     today = timezone.localdate()
     report = DailyReport.objects.filter(user=user, date=today).first()
+    run = RunSession.objects.filter(user=user, date=today).order_by("-started_at").first()
     achievements = user.achievements.select_related("achievement")[:20]
     recent_reports = DailyReport.objects.filter(user=user).order_by("-date")[:45]
     return {
@@ -183,6 +193,7 @@ def user_payload(user: UserProfile):
         "referral_url": f"https://t.me/{settings.BOT_USERNAME}?start={user.referral_code}",
         "reported_today": bool(report),
         "today_report": report_payload(report) if report else None,
+        "run_today": run_payload(run) if run else None,
         "history": [report_payload(item) for item in recent_reports],
         "achievements": [
             {
@@ -205,6 +216,71 @@ def report_payload(report: DailyReport):
         "xp_earned": report.xp_earned,
         "tasks": selected,
     }
+
+
+def run_payload(run: RunSession | None):
+    if not run:
+        return None
+    return {
+        "id": run.id,
+        "status": run.status,
+        "is_verified": run.is_verified,
+        "distance_m": run.distance_m,
+        "duration_s": run.duration_s,
+        "avg_speed_kmh": round(run.avg_speed_kmh, 1),
+        "samples_count": run.samples_count,
+        "rejection_reason": run.rejection_reason,
+        "started_at": run.started_at.isoformat(),
+        "finished_at": run.finished_at.isoformat() if run.finished_at else None,
+        "rules": {
+            "min_distance_m": MIN_RUN_DISTANCE_M,
+            "min_duration_s": MIN_RUN_DURATION_S,
+            "min_speed_kmh": MIN_RUN_SPEED_KMH,
+            "max_speed_kmh": MAX_RUN_SPEED_KMH,
+        },
+    }
+
+
+def haversine_m(lat1, lon1, lat2, lon2):
+    radius_m = 6371000
+    phi1 = math.radians(lat1)
+    phi2 = math.radians(lat2)
+    d_phi = math.radians(lat2 - lat1)
+    d_lambda = math.radians(lon2 - lon1)
+    a = math.sin(d_phi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(d_lambda / 2) ** 2
+    return 2 * radius_m * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+def parse_float(value):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def verify_run(run: RunSession):
+    now = timezone.now()
+    duration_s = max(0, int((now - run.started_at).total_seconds()))
+    avg_speed_kmh = (run.distance_m / duration_s) * 3.6 if duration_s else 0
+    reasons = []
+    if run.distance_m < MIN_RUN_DISTANCE_M:
+        reasons.append(f"kamida {MIN_RUN_DISTANCE_M} metr kerak")
+    if duration_s < MIN_RUN_DURATION_S:
+        reasons.append(f"kamida {MIN_RUN_DURATION_S // 60} daqiqa kerak")
+    if avg_speed_kmh < MIN_RUN_SPEED_KMH:
+        reasons.append("tezlik juda past")
+    if avg_speed_kmh > MAX_RUN_SPEED_KMH:
+        reasons.append("tezlik juda yuqori")
+    if run.samples_count < 3:
+        reasons.append("GPS nuqtalari yetarli emas")
+
+    run.finished_at = now
+    run.duration_s = duration_s
+    run.avg_speed_kmh = avg_speed_kmh
+    run.status = RunSession.Status.REJECTED if reasons else RunSession.Status.VERIFIED
+    run.rejection_reason = ", ".join(reasons)
+    run.save(update_fields=["finished_at", "duration_s", "avg_speed_kmh", "status", "rejection_reason"])
+    return run
 
 
 def parse_body(request):
@@ -277,7 +353,23 @@ def api_submit_report(request):
             status=409,
         )
 
-    report = DailyReport.submit(user, data.get("tasks", []))
+    tasks = data.get("tasks", [])
+    if TaskCode.SPORT.value in tasks and not RunSession.objects.filter(
+        user=user,
+        date=timezone.localdate(),
+        status=RunSession.Status.VERIFIED,
+    ).exists():
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "sport_gps_required",
+                "message": "Sport vazifasi uchun avval GPS orqali yugurishni tasdiqlang.",
+                "user": user_payload(user),
+            },
+            status=400,
+        )
+
+    report = DailyReport.submit(user, tasks)
     user.refresh_from_db()
     return JsonResponse(
         {
@@ -288,6 +380,79 @@ def api_submit_report(request):
             "stats": today_stats(),
         }
     )
+
+
+@csrf_exempt
+@require_POST
+def api_run_start(request):
+    data = parse_body(request)
+    user = resolve_user(data)
+    if not user:
+        return JsonResponse({"ok": False, "error": "user_not_found"}, status=404)
+    today = timezone.localdate()
+    active = RunSession.objects.filter(user=user, date=today, status=RunSession.Status.ACTIVE).first()
+    if active:
+        return JsonResponse({"ok": True, "run": run_payload(active)})
+    run = RunSession.objects.create(user=user, date=today)
+    return JsonResponse({"ok": True, "run": run_payload(run)})
+
+
+@csrf_exempt
+@require_POST
+def api_run_point(request):
+    data = parse_body(request)
+    user = resolve_user(data)
+    if not user:
+        return JsonResponse({"ok": False, "error": "user_not_found"}, status=404)
+    run = RunSession.objects.filter(user=user, id=data.get("run_id"), status=RunSession.Status.ACTIVE).first()
+    if not run:
+        return JsonResponse({"ok": False, "error": "active_run_not_found"}, status=404)
+
+    lat = parse_float(data.get("latitude"))
+    lon = parse_float(data.get("longitude"))
+    accuracy = parse_float(data.get("accuracy"))
+    if lat is None or lon is None:
+        return JsonResponse({"ok": False, "error": "location_required"}, status=400)
+    if accuracy is not None and accuracy > MAX_GPS_ACCURACY_M:
+        return JsonResponse({"ok": True, "run": run_payload(run), "ignored": "low_accuracy"})
+
+    now = timezone.now()
+    if run.last_latitude is not None and run.last_longitude is not None:
+        step_m = haversine_m(run.last_latitude, run.last_longitude, lat, lon)
+        seconds = max(1, int((now - (run.last_recorded_at or run.started_at)).total_seconds()))
+        step_speed_kmh = (step_m / seconds) * 3.6
+        if 2 <= step_m <= 300 and step_speed_kmh <= MAX_POINT_SPEED_KMH:
+            run.distance_m += int(step_m)
+
+    run.last_latitude = lat
+    run.last_longitude = lon
+    run.last_recorded_at = now
+    run.samples_count += 1
+    run.save(
+        update_fields=[
+            "last_latitude",
+            "last_longitude",
+            "last_recorded_at",
+            "distance_m",
+            "samples_count",
+        ]
+    )
+    return JsonResponse({"ok": True, "run": run_payload(run)})
+
+
+@csrf_exempt
+@require_POST
+def api_run_finish(request):
+    data = parse_body(request)
+    user = resolve_user(data)
+    if not user:
+        return JsonResponse({"ok": False, "error": "user_not_found"}, status=404)
+    run = RunSession.objects.filter(user=user, id=data.get("run_id"), status=RunSession.Status.ACTIVE).first()
+    if not run:
+        return JsonResponse({"ok": False, "error": "active_run_not_found"}, status=404)
+    run = verify_run(run)
+    user.refresh_from_db()
+    return JsonResponse({"ok": True, "run": run_payload(run), "user": user_payload(user)})
 
 
 @require_GET

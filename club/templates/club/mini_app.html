@@ -100,6 +100,22 @@
           </div>
           <div class="task-progress-track"><span id="selectedXpBar"></span></div>
         </div>
+        <div class="run-tracker" id="runTracker">
+          <div>
+            <span>GPS sport tekshiruvi</span>
+            <strong id="runStatusText">Yugurish tasdiqlanmagan</strong>
+            <small id="runRuleText">Kamida 800 m va 6 daqiqa yugurish kerak.</small>
+          </div>
+          <div class="run-stats">
+            <div><b id="runDistance">0 m</b><small>Masofa</small></div>
+            <div><b id="runDuration">0:00</b><small>Vaqt</small></div>
+            <div><b id="runSpeed">0 km/s</b><small>Tezlik</small></div>
+          </div>
+          <div class="run-actions">
+            <button class="ghost-button compact" id="startRunBtn" type="button">Yugurishni boshlash</button>
+            <button class="ghost-button compact hidden" id="finishRunBtn" type="button">Tugatish</button>
+          </div>
+        </div>
         <div class="task-list" id="taskList"></div>
         <button class="primary-button" id="submitReportBtn" type="button">Bugungi hisobotni topshirish</button>
       </div>

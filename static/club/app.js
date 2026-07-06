@@ -5,6 +5,8 @@ const state = {
   leaderboard: [],
   rankings: {},
   telegramUser: null,
+  runWatchId: null,
+  runTimerId: null,
 };
 
 const screenTitles = {
@@ -116,6 +118,7 @@ async function bootstrap() {
 function renderAll() {
   renderHeader();
   renderRegistration();
+  renderRunTracker();
   renderTasks();
   renderAchievements();
   renderLeaderboard(state.leaderboard);
@@ -167,6 +170,7 @@ function renderTasks() {
   list.innerHTML = "";
   const reported = state.user.reported_today;
   const selectedCodes = new Set(state.user.today_report?.tasks?.map((item) => item.code) || []);
+  const sportVerified = state.user.run_today?.is_verified;
 
   $("reportStatus").textContent = reported ? "Topshirildi" : "Kutilmoqda";
   $("reportStatus").classList.toggle("done", reported);
@@ -174,14 +178,16 @@ function renderTasks() {
   $("submitReportBtn").textContent = reported ? "Bugun hisobot topshirilgan" : "Bugungi hisobotni topshirish";
 
   state.tasks.forEach((task) => {
+    const needsGps = task.code === "sport" && !sportVerified && !reported;
+    const checked = selectedCodes.has(task.code) || (task.code === "sport" && sportVerified && !reported);
     const label = document.createElement("label");
-    label.className = "task-item";
+    label.className = `task-item ${needsGps ? "gps-required" : ""}`;
     label.innerHTML = `
-      <input type="checkbox" value="${task.code}" ${reported ? "disabled" : ""} ${selectedCodes.has(task.code) ? "checked" : ""}>
+      <input type="checkbox" value="${task.code}" ${reported || needsGps ? "disabled" : ""} ${checked ? "checked" : ""}>
       <span class="task-check">✓</span>
       <span class="task-copy">
         <strong>${task.label}</strong>
-        <small>${taskDescriptions[task.code] || "Kunlik vazifa"}</small>
+        <small>${needsGps ? "Avval GPS orqali yugurishni tasdiqlang" : taskDescriptions[task.code] || "Kunlik vazifa"}</small>
       </span>
       <span class="task-xp">+${task.xp}</span>
     `;
@@ -195,6 +201,58 @@ function renderTasks() {
 
   $("storyPanel").classList.toggle("hidden", !state.user.today_report);
   if (state.user.today_report) renderStory(state.user.today_report);
+}
+
+function formatDuration(seconds) {
+  const safe = Math.max(0, Number(seconds || 0));
+  const minutes = Math.floor(safe / 60);
+  const rest = String(safe % 60).padStart(2, "0");
+  return `${minutes}:${rest}`;
+}
+
+function renderRunTracker() {
+  const run = state.user.run_today;
+  const panel = $("runTracker");
+  panel.classList.toggle("active", run?.status === "active");
+  panel.classList.toggle("verified", run?.status === "verified");
+  panel.classList.toggle("rejected", run?.status === "rejected");
+
+  const distance = run?.distance_m || 0;
+  let duration = run?.duration_s || 0;
+  if (run?.status === "active" && run.started_at) {
+    duration = Math.max(0, Math.floor((Date.now() - new Date(run.started_at).getTime()) / 1000));
+  }
+  $("runDistance").textContent = distance >= 1000 ? `${(distance / 1000).toFixed(2)} km` : `${distance} m`;
+  $("runDuration").textContent = formatDuration(duration);
+  $("runSpeed").textContent = `${run?.avg_speed_kmh || 0} km/s`;
+
+  if (run?.status === "verified") {
+    $("runStatusText").textContent = "Sport GPS orqali tasdiqlandi";
+    $("runRuleText").textContent = "Endi Sport vazifasi avtomatik belgilandi.";
+    $("startRunBtn").classList.add("hidden");
+    $("finishRunBtn").classList.add("hidden");
+  } else if (run?.status === "active") {
+    $("runStatusText").textContent = state.runWatchId ? "Yugurish kuzatilmoqda" : "Yugurish sessiyasi aktiv";
+    $("runRuleText").textContent = "Telefon lokatsiyasini yoqib, finishgacha yuguring.";
+    $("startRunBtn").textContent = state.runWatchId ? "GPS kuzatyapti" : "Davom ettirish";
+    $("startRunBtn").disabled = Boolean(state.runWatchId);
+    $("startRunBtn").classList.remove("hidden");
+    $("finishRunBtn").classList.remove("hidden");
+  } else if (run?.status === "rejected") {
+    $("runStatusText").textContent = "Yugurish tasdiqlanmadi";
+    $("runRuleText").textContent = run.rejection_reason || "Masofa, vaqt yoki tezlik shartlari bajarilmadi.";
+    $("startRunBtn").textContent = "Qayta boshlash";
+    $("startRunBtn").disabled = false;
+    $("startRunBtn").classList.remove("hidden");
+    $("finishRunBtn").classList.add("hidden");
+  } else {
+    $("runStatusText").textContent = "Yugurish tasdiqlanmagan";
+    $("runRuleText").textContent = "Sport XP olish uchun kamida 800 m va 6 daqiqa GPS yugurish kerak.";
+    $("startRunBtn").textContent = "Yugurishni boshlash";
+    $("startRunBtn").disabled = false;
+    $("startRunBtn").classList.remove("hidden");
+    $("finishRunBtn").classList.add("hidden");
+  }
 }
 
 function updateSelectedProgress() {
@@ -389,6 +447,75 @@ async function submitReport() {
   }
 }
 
+function stopRunWatch() {
+  if (state.runWatchId !== null && navigator.geolocation?.clearWatch) {
+    navigator.geolocation.clearWatch(state.runWatchId);
+  }
+  state.runWatchId = null;
+  if (state.runTimerId) clearInterval(state.runTimerId);
+  state.runTimerId = null;
+}
+
+async function sendRunPoint(position) {
+  const run = state.user.run_today;
+  if (!run?.id) return;
+  try {
+    const data = await postJSON("/api/run/point/", {
+      telegram_id: state.user.telegram_id,
+      run_id: run.id,
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude,
+      accuracy: position.coords.accuracy,
+    });
+    state.user.run_today = data.run;
+    renderRunTracker();
+  } catch (error) {
+    console.debug("run point failed", error);
+  }
+}
+
+async function startRun() {
+  if (!navigator.geolocation) {
+    showToast("Bu telefonda GPS topilmadi");
+    return;
+  }
+  try {
+    const data = await postJSON("/api/run/start/", {telegram_id: state.user.telegram_id});
+    state.user.run_today = data.run;
+    renderRunTracker();
+    navigator.geolocation.getCurrentPosition(sendRunPoint, () => {
+      showToast("GPS ruxsatini bering");
+    }, {enableHighAccuracy: true, timeout: 12000, maximumAge: 0});
+    state.runWatchId = navigator.geolocation.watchPosition(sendRunPoint, () => {
+      showToast("GPS lokatsiya olinmadi");
+    }, {enableHighAccuracy: true, timeout: 15000, maximumAge: 0});
+    state.runTimerId = setInterval(renderRunTracker, 1000);
+    renderRunTracker();
+    showToast("Yugurish boshlandi");
+  } catch (error) {
+    console.debug("run start failed", error);
+    showToast("Yugurishni boshlashda xatolik");
+  }
+}
+
+async function finishRun() {
+  const run = state.user.run_today;
+  if (!run?.id) return;
+  stopRunWatch();
+  try {
+    const data = await postJSON("/api/run/finish/", {
+      telegram_id: state.user.telegram_id,
+      run_id: run.id,
+    });
+    state.user = data.user;
+    renderAll();
+    showToast(data.run.is_verified ? "Sport GPS orqali tasdiqlandi" : "Yugurish shartlari bajarilmadi");
+  } catch (error) {
+    console.debug("run finish failed", error);
+    showToast("Yugurishni tugatishda xatolik");
+  }
+}
+
 async function loadRanking() {
   const response = await fetch(`/api/ranking/?telegram_id=${state.user.telegram_id}`);
   const data = await response.json();
@@ -411,6 +538,8 @@ document.addEventListener("click", (event) => {
 $("saveProfileBtn").addEventListener("click", saveProfile);
 $("submitReportBtn").addEventListener("click", submitReport);
 $("refreshBtn").addEventListener("click", bootstrap);
+$("startRunBtn").addEventListener("click", startRun);
+$("finishRunBtn").addEventListener("click", finishRun);
 $("ratingPeriod").addEventListener("click", (event) => {
   const button = event.target.closest(".rating-tab");
   if (!button) return;

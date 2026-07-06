@@ -198,6 +198,37 @@ class XPTransaction(models.Model):
         return f"{self.user.full_name}: {self.amount} XP"
 
 
+class RunSession(models.Model):
+    class Status(models.TextChoices):
+        ACTIVE = "active", "Active"
+        VERIFIED = "verified", "Verified"
+        REJECTED = "rejected", "Rejected"
+
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="run_sessions")
+    date = models.DateField(default=timezone.localdate)
+    status = models.CharField(max_length=16, choices=Status.choices, default=Status.ACTIVE)
+    started_at = models.DateTimeField(auto_now_add=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
+    last_latitude = models.FloatField(null=True, blank=True)
+    last_longitude = models.FloatField(null=True, blank=True)
+    last_recorded_at = models.DateTimeField(null=True, blank=True)
+    distance_m = models.PositiveIntegerField(default=0)
+    duration_s = models.PositiveIntegerField(default=0)
+    avg_speed_kmh = models.FloatField(default=0)
+    samples_count = models.PositiveIntegerField(default=0)
+    rejection_reason = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        ordering = ["-started_at"]
+
+    def __str__(self):
+        return f"{self.user.full_name} - {self.date} ({self.status})"
+
+    @property
+    def is_verified(self) -> bool:
+        return self.status == self.Status.VERIFIED
+
+
 class Achievement(models.Model):
     class Criteria(models.TextChoices):
         STREAK_DAYS = "streak_days", "Streak kunlari"

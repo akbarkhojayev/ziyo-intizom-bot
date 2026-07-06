@@ -1,9 +1,10 @@
 from datetime import timedelta
+import json
 
 from django.test import TestCase
 from django.utils import timezone
 
-from .models import DailyReport, TaskCode, UserProfile
+from .models import DailyReport, RunSession, TaskCode, UserProfile
 
 
 class DailyReportTests(TestCase):
@@ -51,3 +52,38 @@ class DailyReportTests(TestCase):
         )
 
         self.assertEqual(report.xp_earned, 100)
+
+
+class ReportApiTests(TestCase):
+    def setUp(self):
+        self.user = UserProfile.objects.create(telegram_id=2, full_name="Runner")
+
+    def test_sport_requires_verified_gps_run(self):
+        response = self.client.post(
+            "/api/report/",
+            data=json.dumps({"telegram_id": self.user.telegram_id, "tasks": [TaskCode.SPORT.value]}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error"], "sport_gps_required")
+
+    def test_sport_report_accepts_verified_gps_run(self):
+        RunSession.objects.create(
+            user=self.user,
+            date=timezone.localdate(),
+            status=RunSession.Status.VERIFIED,
+            distance_m=1000,
+            duration_s=500,
+            avg_speed_kmh=7.2,
+            samples_count=5,
+        )
+
+        response = self.client.post(
+            "/api/report/",
+            data=json.dumps({"telegram_id": self.user.telegram_id, "tasks": [TaskCode.SPORT.value]}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["report"]["xp_earned"], 20)
