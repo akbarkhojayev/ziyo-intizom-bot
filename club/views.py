@@ -53,7 +53,7 @@ def mini_app(request):
             "tasks": task_payload(),
             "brand": "ZIYO | INTIZOM CLUB",
             "slogan": "Intizom motivatsiyadan kuchli.",
-            "asset_version": "20260706-sport-confirm-v4",
+            "asset_version": "20260706-onboarding-v5",
         },
     )
 
@@ -324,6 +324,7 @@ def api_bootstrap(request):
     user = get_or_create_telegram_user(
         telegram_id=int(telegram_id),
         first_name=data.get("first_name", ""),
+        full_name=data.get("full_name", ""),
         username=data.get("username", ""),
         referral_code=data.get("referral_code", ""),
     )

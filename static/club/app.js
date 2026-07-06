@@ -85,9 +85,13 @@ function telegramPayload() {
   const unsafe = tg?.initDataUnsafe || {};
   const user = unsafe.user || {};
   const startParam = unsafe.start_param || params.get("start") || "";
+  const firstName = user.first_name || params.get("first_name") || "Demo";
+  const lastName = user.last_name || params.get("last_name") || "";
+  const fullName = `${firstName} ${lastName}`.trim();
   return {
     telegram_id: user.id || params.get("telegram_id") || "10001",
-    first_name: user.first_name || params.get("first_name") || "Demo",
+    first_name: firstName,
+    full_name: fullName,
     username: user.username || "",
     referral_code: startParam,
   };
@@ -156,12 +160,27 @@ function renderLeagueProgress() {
 
 function renderRegistration() {
   const needsProfile = !state.user.age || !state.user.region;
+  document.body.classList.toggle("onboarding-mode", needsProfile);
   $("registerPanel").classList.toggle("hidden", !needsProfile);
   $("fullNameInput").value = state.user.full_name || "";
   $("ageInput").value = state.user.age || "";
   $("genderInput").value = state.user.gender || "other";
   $("regionInput").value = state.user.region || "";
   $("goalInput").value = state.user.main_goal || "discipline";
+  $("refreshBtn").classList.toggle("hidden", needsProfile);
+  if (needsProfile) {
+    $("screenTitle").textContent = "Ro'yxatdan o'tish";
+    document.querySelector(".summary-card").classList.add("hidden");
+    document.querySelector(".section-nav").classList.add("hidden");
+    document.querySelectorAll(".tab-view").forEach((item) => item.classList.add("hidden"));
+    return;
+  }
+  document.querySelector(".summary-card").classList.remove("hidden");
+  document.querySelector(".section-nav").classList.remove("hidden");
+  const activeTab = document.querySelector(".nav-item.active")?.dataset.tab || "home";
+  document.querySelectorAll(".tab-view").forEach((item) => item.classList.add("hidden"));
+  $(`${activeTab}Tab`).classList.remove("hidden");
+  $("screenTitle").textContent = screenTitles[activeTab] || "ZIYO";
 }
 
 function runTrackerMarkup() {
@@ -520,6 +539,18 @@ async function saveProfile(source = "register") {
     region: $(ids.region).value,
     main_goal: $(ids.goal).value,
   };
+  if (!payload.full_name.trim()) {
+    showToast("Ismni kiriting");
+    return;
+  }
+  if (!payload.age) {
+    showToast("Yoshingizni kiriting");
+    return;
+  }
+  if (!payload.region) {
+    showToast("Viloyatni tanlang");
+    return;
+  }
   const data = await postJSON("/api/register/", payload);
   state.user = data.user;
   renderAll();

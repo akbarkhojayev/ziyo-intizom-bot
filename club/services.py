@@ -9,6 +9,7 @@ from .models import Achievement, DailyReport, TaskCode, UserProfile, XPTransacti
 def get_or_create_telegram_user(
     telegram_id: int,
     first_name: str = "",
+    full_name: str = "",
     username: str = "",
     referral_code: str = "",
 ) -> UserProfile:
@@ -19,7 +20,7 @@ def get_or_create_telegram_user(
     user, created = UserProfile.objects.get_or_create(
         telegram_id=telegram_id,
         defaults={
-            "full_name": first_name or f"User {telegram_id}",
+            "full_name": full_name or first_name or f"User {telegram_id}",
             "first_name": first_name,
             "username": username,
             "referred_by": referrer,
