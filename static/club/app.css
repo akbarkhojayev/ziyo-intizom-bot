@@ -571,6 +571,21 @@ select:focus {
   opacity: 1;
 }
 
+.sport-trigger {
+  cursor: pointer;
+  border-color: rgba(231, 185, 87, 0.42);
+}
+
+.sport-trigger .task-row {
+  border-radius: 7px;
+}
+
+.sport-trigger .task-check {
+  color: var(--ink);
+  border-color: var(--gold);
+  background: var(--gold);
+}
+
 .story-card {
   text-align: left;
   border-color: rgba(231, 185, 87, 0.45);

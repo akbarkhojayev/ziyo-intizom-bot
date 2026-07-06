@@ -204,14 +204,14 @@ function renderTasks() {
     const checked = selectedCodes.has(task.code) || (task.code === "sport" && sportVerified && !reported);
     if (task.code === "sport") {
       const item = document.createElement("div");
-      item.className = `task-item task-item-expanded ${needsGps ? "gps-required" : ""}`;
+      item.className = `task-item task-item-expanded ${needsGps ? "gps-required sport-trigger" : ""}`;
       item.innerHTML = `
         <label class="task-row">
           <input type="checkbox" value="${task.code}" ${reported || needsGps ? "disabled" : ""} ${checked ? "checked" : ""}>
           <span class="task-check">✓</span>
           <span class="task-copy">
             <strong>${task.label}</strong>
-            <small>${needsGps ? "GPS yugurish tasdiqlansa avtomatik belgilanadi" : "GPS orqali tasdiqlangan sport"}</small>
+            <small>${needsGps ? "Sportni bosib GPS yugurishni boshlang" : "GPS orqali tasdiqlangan sport"}</small>
           </span>
           <span class="task-xp">+${task.xp}</span>
         </label>
@@ -605,6 +605,10 @@ $("refreshBtn").addEventListener("click", bootstrap);
 document.addEventListener("click", (event) => {
   if (event.target.closest("#startRunBtn")) startRun();
   if (event.target.closest("#finishRunBtn")) finishRun();
+  const sportCard = event.target.closest(".sport-trigger");
+  if (sportCard && !event.target.closest("#startRunBtn") && !event.target.closest("#finishRunBtn")) {
+    startRun();
+  }
 });
 $("ratingPeriod").addEventListener("click", (event) => {
   const button = event.target.closest(".rating-tab");
